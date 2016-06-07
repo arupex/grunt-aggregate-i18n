@@ -1,0 +1,28 @@
+{
+  "name": "grunt-aggregate-i18n",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arupex/grunt-aggregate-i18n.git"
+  },
+  "keywords": [
+    "grunt",
+    "aggregate",
+    "i18n",
+    "l10n",
+    "localization",
+    "internationalization"
+  ],
+  "author": "dirwin517",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/arupex/grunt-aggregate-i18n/issues"
+  },
+  "homepage": "https://github.com/arupex/grunt-aggregate-i18n#readme",
+  "dependencies": {}
+}
