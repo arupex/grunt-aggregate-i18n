@@ -1,4 +1,5 @@
 # grunt-aggregate-i18n
+Aggregate i18n/l10n map string files into one file per brand/territory
 
 [![npm version](https://badge.fury.io/js/grunt-aggregate-i18n.svg)](https://badge.fury.io/js/grunt-aggregate-i18n) [![dependencies](https://david-dm.org/arupex/grunt-aggregate-i18n.svg)](http://github.com/arupex/grunt-aggregate-i18n) ![Build Status](https://api.travis-ci.org/arupex/grunt-aggregate-i18n.svg?branch=master) <a href='https://pledgie.com/campaigns/31873'><img alt='Pledge To Arupex!' src='https://pledgie.com/campaigns/31873.png?skin_name=chrome' border='0' ></a>
 
