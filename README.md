@@ -1,6 +1,13 @@
 # grunt-aggregate-i18n
 
-    //run
+[![npm version](https://badge.fury.io/js/grunt-aggregate-i18n.svg)](https://badge.fury.io/js/grunt-aggregate-i18n) [![dependencies](https://david-dm.org/arupex/grunt-aggregate-i18n.svg)](http://github.com/arupex/grunt-aggregate-i18n) ![Build Status](https://api.travis-ci.org/arupex/grunt-aggregate-i18n.svg?branch=master) <a href='https://pledgie.com/campaigns/31873'><img alt='Pledge To Arupex!' src='https://pledgie.com/campaigns/31873.png?skin_name=chrome' border='0' ></a>
+
+Install
+
+    npm install grunt-aggregate-i18n --save-dev
+
+Usage:
+
     require('grunt-aggregate-i18n')(grunt);
 
     grunt.initConfig( "grunt-aggregate-i18n" : {
@@ -21,14 +28,4 @@
         dest: './test/dest/l10n/{{language}}_{{territory}}.json'
     });
 
-
-       all keys show up in all files
-
-        UnYun should be english
-
-        nbGB is nbUS
-
-        nbNO is nbNO
-
-        enUS is enUS
-
+See Test (In-Progress)
