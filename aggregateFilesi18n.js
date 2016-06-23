@@ -4,8 +4,6 @@
 module.exports = function aggregateFilesI18n(options, done){
 
     var fs = require('fs');
-    var pathLib = require('path');
-
     var files = options.src || [];
 
     var languages = options.languages || [];
@@ -16,10 +14,9 @@ module.exports = function aggregateFilesI18n(options, done){
 
     var keys = {};
 
-    //var keepInMemory = options.keepInMemory;
-
     var mapOfLangTerr = {};
 
+    var parsePath = require('./parsePath');
 
     function determineKeys(data){
         Object.keys(data).forEach(function iterateKeys(key){
@@ -49,9 +46,6 @@ module.exports = function aggregateFilesI18n(options, done){
 
     function setMemory(lang, terr, data) {
 
-
-        //console.log('setMemory', mapOfLangTerr);
-
         if (!mapOfLangTerr[lang]) {
             mapOfLangTerr[lang] = {};
         }
@@ -59,6 +53,30 @@ module.exports = function aggregateFilesI18n(options, done){
             mapOfLangTerr[lang][terr] = {};
         }
         mapOfLangTerr[lang][terr] = extendKeys(mapOfLangTerr[lang][terr], data);
+    }
+
+    function handleTerritoryFallback(lang, terr) {
+        if (mapOfLangTerr[lang][fallbackTerritory]) {
+            mapOfLangTerr[lang][terr] = clone(mapOfLangTerr[lang][fallbackTerritory]);
+        }
+        else if (mapOfLangTerr[fallbackLanguage][terr]) {
+            mapOfLangTerr[lang][terr] = clone(mapOfLangTerr[fallbackLanguage][terr]);
+        }
+        else {
+            mapOfLangTerr[lang][terr] = clone(mapOfLangTerr[fallbackLanguage][fallbackTerritory]);
+        }
+    }
+
+    function handleMissingKeys(lang, key, terr) {
+        if (mapOfLangTerr[lang][fallbackTerritory] && mapOfLangTerr[lang][fallbackTerritory][key]) {
+            mapOfLangTerr[lang][terr][key] = clone(mapOfLangTerr[lang][fallbackTerritory][key]);
+        }
+        else if (mapOfLangTerr[fallbackLanguage][terr] && mapOfLangTerr[fallbackLanguage][terr][key]) {
+            mapOfLangTerr[lang][terr][key] = clone(mapOfLangTerr[fallbackLanguage][terr][key]);
+        }
+        else {
+            mapOfLangTerr[lang][terr][key] = clone(mapOfLangTerr[fallbackLanguage][fallbackTerritory][key]);
+        }
     }
 
     function handleKeyFallback(lang, terr, key) {
@@ -69,28 +87,12 @@ module.exports = function aggregateFilesI18n(options, done){
 
         //handle territory fallback
         if (!mapOfLangTerr[lang][terr]) {
-            if (mapOfLangTerr[lang][fallbackTerritory]) {
-                mapOfLangTerr[lang][terr] = clone(mapOfLangTerr[lang][fallbackTerritory]);
-            }
-            else if (mapOfLangTerr[fallbackLanguage][terr]) {
-                mapOfLangTerr[lang][terr] = clone(mapOfLangTerr[fallbackLanguage][terr]);
-            }
-            else {
-                mapOfLangTerr[lang][terr] = clone(mapOfLangTerr[fallbackLanguage][fallbackTerritory]);
-            }
+            handleTerritoryFallback(lang, terr);
         }
 
         //handle missing keys
         if (!mapOfLangTerr[lang][terr][key]) {
-            if (mapOfLangTerr[lang][fallbackTerritory] && mapOfLangTerr[lang][fallbackTerritory][key]) {
-                mapOfLangTerr[lang][terr][key] = clone(mapOfLangTerr[lang][fallbackTerritory][key]);
-            }
-            else if (mapOfLangTerr[fallbackLanguage][terr] && mapOfLangTerr[fallbackLanguage][terr][key]) {
-                mapOfLangTerr[lang][terr][key] = clone(mapOfLangTerr[fallbackLanguage][terr][key]);
-            }
-            else {
-                mapOfLangTerr[lang][terr][key] = clone(mapOfLangTerr[fallbackLanguage][fallbackTerritory][key]);
-            }
+            handleMissingKeys(lang, key, terr);
         }
     }
 
@@ -131,42 +133,10 @@ module.exports = function aggregateFilesI18n(options, done){
         return JSON.parse(JSON.stringify(data));
     }
 
-    function parsePath(path, language, territory){
-        var langRegex = /\{\{language\}\}/g;
-        var territoryRegex = /\{\{territory\}\}/g;
-
-        var result = path.replace(langRegex, language).replace(territoryRegex, territory);
-        //console.log('', result, arguments);
-        return result;
-    }
-
-    function writeFile(path, data){
-        fs.writeFileSync(path, JSON.stringify(data, null, 3));
-    }
-
     function readFile(path){
         return JSON.parse(fs.readFileSync(path));
     }
 
-
-    //http://stackoverflow.com/questions/13542667/create-directory-when-writing-to-file-in-node-js
-    function ensureDirectoryExistence(filePath) {
-        var dirname = pathLib.dirname(filePath);
-        if (directoryExists(dirname)) {
-            return true;
-        }
-        ensureDirectoryExistence(dirname);
-        fs.mkdirSync(dirname);
-    }
-
-    function directoryExists(path) {
-        try {
-            return fs.statSync(path).isDirectory();
-        }
-        catch (err) {
-            return false;
-        }
-    }
 
     (function main(){
 
@@ -175,52 +145,28 @@ module.exports = function aggregateFilesI18n(options, done){
 
             try {
                 var data = nameSpaceFile(readFile(path), file.namespace);
-                //if(keepInMemory){
-                //if(keepInMemory){
-                //console.log('data', data);
                 setMemory(lang, terr, data);
-                //}
-                //else{
-                //    setMemory(lang, terr, true);
-                //}
                 determineKeys(data);
             }
-            catch(e){
-                //console.log('', e);
-                //setMemory(lang, terr, null);
-            }
+            catch(e){}
 
         });
 
-        var dest = options.dest;
-
-        //do primary lang/terr
-        var parsePath2 = parsePath(dest, fallbackLanguage, fallbackTerritory);
-        ensureDirectoryExistence(parsePath2);
-        writeFile(parsePath2, getMemory(fallbackLanguage, fallbackTerritory));
-
+        getMemory(fallbackLanguage, fallbackTerritory);
 
         territories.forEach(function iterateTerr(terr){
-            var path = parsePath(dest, fallbackLanguage, terr);
-            ensureDirectoryExistence(path);
-            writeFile(path, getMemory(fallbackLanguage, terr));
+            getMemory(fallbackLanguage, terr);
         });
 
         languages.forEach(function iterateLangs(lang){
-            var path = parsePath(dest, lang, fallbackTerritory);
-            ensureDirectoryExistence(path);
-            writeFile(path, getMemory(lang, fallbackTerritory));
+            getMemory(lang, fallbackTerritory);
         });
 
         forEachLangTerr(function iterateLangsTerr(lang, terr){
-            //if(lang === fallbackLanguage && terr === fallbackTerritory){
-            //    return;
-            //}
-            var path = parsePath(dest, lang, terr);
-            ensureDirectoryExistence(path);
-            writeFile(path, getMemory(lang, terr));
+            getMemory(lang, terr);
         });
-        done();
+
+        done(mapOfLangTerr);
     })();
 
 };

@@ -41,7 +41,9 @@ module.exports = function Aggregate18nFiles(grunt) {
 
         var done = this.async();
 
-        require('./aggregateFilesi18n')(options, done);
+        require('./aggregateFilesi18n')(options, function(data){
+            require('./writefile')(options.dest, data, done);
+        });
 
     });
 
